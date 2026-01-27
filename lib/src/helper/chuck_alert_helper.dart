@@ -16,36 +16,40 @@ sealed class ChuckAlertHelper {
     void Function()? secondButtonAction,
     Brightness? brightness,
   }) {
-    final List<Widget> actions = [
-      TextButton(
-        onPressed: () {
-          if (firstButtonAction != null) {
-            firstButtonAction();
-          }
-          Navigator.of(context).pop();
-        },
-        child: Text(firstButtonTitle),
-      ),
-    ];
-    if (secondButtonTitle != null) {
-      actions.add(
-        TextButton(
-          onPressed: () {
-            if (secondButtonAction != null) {
-              secondButtonAction();
-            }
-            Navigator.of(context).pop();
-          },
-          child: Text(secondButtonTitle),
-        ),
-      );
-    }
     showDialog<void>(
       context: context,
-      builder: (BuildContext buildContext) => Theme(
-        data: ThemeData(brightness: brightness ?? Brightness.light),
-        child: AlertDialog(title: Text(title), content: Text(description), actions: actions),
-      ),
+      builder: (BuildContext dialogContext) {
+        final List<Widget> actions = [
+          TextButton(
+            onPressed: () {
+              if (firstButtonAction != null) {
+                firstButtonAction();
+              }
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text(firstButtonTitle),
+          ),
+        ];
+
+        if (secondButtonTitle != null) {
+          actions.add(
+            TextButton(
+              onPressed: () {
+                if (secondButtonAction != null) {
+                  secondButtonAction();
+                }
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(secondButtonTitle),
+            ),
+          );
+        }
+
+        return Theme(
+          data: ThemeData(brightness: brightness ?? Brightness.light),
+          child: AlertDialog(title: Text(title), content: Text(description), actions: actions),
+        );
+      },
     );
   }
 }
