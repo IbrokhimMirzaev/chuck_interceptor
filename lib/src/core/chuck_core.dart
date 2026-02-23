@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:chuck_interceptor/src/core/chuck_utils.dart';
 import 'package:chuck_interceptor/src/helper/chuck_save_helper.dart';
 import 'package:chuck_interceptor/src/model/chuck_http_error.dart';
+import 'package:chuck_interceptor/src/model/chuck_call_type.dart';
 import 'package:chuck_interceptor/src/model/chuck_http_call.dart';
+import 'package:chuck_interceptor/src/model/chuck_http_request.dart';
 import 'package:chuck_interceptor/src/model/chuck_http_response.dart';
 import 'package:chuck_interceptor/src/ui/page/chuck_calls_list_screen.dart';
 import 'package:chuck_interceptor/src/utils/shake_detector.dart';
@@ -253,6 +255,42 @@ class ChuckCore {
     assert(ChuckHttpCall.request != null, "Http call request can't be null");
     assert(ChuckHttpCall.response != null, "Http call response can't be null");
     callsSubject.add([...callsSubject.value, ChuckHttpCall]);
+  }
+
+  /// Add WebSocket event to calls subject
+  void addWebSocketCall({
+    required String direction,
+    required String event,
+    dynamic data,
+    String server = "",
+  }) {
+    final now = DateTime.now();
+    final call = ChuckHttpCall(now.hashCode);
+
+    call.callType = ChuckCallType.ws;
+    call.method = direction == "outgoing" ? "▲ EMIT" : "▼ EVENT";
+    call.endpoint = event;
+    call.server = server;
+    call.client = "WebSocket";
+    call.loading = false;
+    call.secure = server.startsWith("wss");
+    call.uri = "$server/$event";
+
+    final request = ChuckHttpRequest();
+    request.time = now;
+    request.body = data ?? "";
+    request.headers = {"direction": direction, "event": event};
+    call.request = request;
+
+    final response = ChuckHttpResponse();
+    response.status = 0;
+    response.time = now;
+    response.body = data ?? "";
+    call.response = response;
+
+    call.duration = 0;
+
+    addCall(call);
   }
 
   /// Remove all calls from calls subject

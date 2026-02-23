@@ -1,3 +1,4 @@
+import 'chuck_call_type.dart';
 import 'chuck_http_error.dart';
 import 'chuck_http_request.dart';
 import 'chuck_http_response.dart';
@@ -13,6 +14,7 @@ class ChuckHttpCall {
   String server = "";
   String uri = "";
   int duration = 0;
+  ChuckCallType callType = ChuckCallType.http;
 
   ChuckHttpRequest? request;
   ChuckHttpResponse? response;
@@ -23,12 +25,16 @@ class ChuckHttpCall {
     createdTime = DateTime.now();
   }
 
+  bool get isWebSocket => callType.isWebSocket;
+
   void setResponse(ChuckHttpResponse response) {
     this.response = response;
     loading = false;
   }
 
   String getCurlCommand() {
+    if (isWebSocket) return "";
+
     var compressed = false;
     var curlCmd = "curl";
     curlCmd += " -X $method";

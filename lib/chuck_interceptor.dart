@@ -106,4 +106,19 @@ final class Chuck {
     assert(ChuckHttpCall.response != null, "Http call response can't be null");
     _chuckCore.addCall(ChuckHttpCall);
   }
+
+  /// Add WebSocket event to inspector.
+  void addWebSocketCall({
+    required String direction,
+    required String event,
+    dynamic data,
+    String server = "",
+  }) {
+    _chuckCore.addWebSocketCall(
+      direction: direction,
+      event: event,
+      data: data,
+      server: server,
+    );
+  }
 }

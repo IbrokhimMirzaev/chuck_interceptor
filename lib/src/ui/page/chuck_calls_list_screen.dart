@@ -3,6 +3,7 @@ import 'package:chuck_interceptor/src/model/chuck_menu_item.dart';
 import 'package:chuck_interceptor/src/helper/chuck_alert_helper.dart';
 import 'package:chuck_interceptor/src/model/chuck_sort_option.dart';
 import 'package:chuck_interceptor/src/ui/page/chuck_call_details_screen.dart';
+import 'package:chuck_interceptor/src/model/chuck_call_type.dart';
 import 'package:chuck_interceptor/src/model/chuck_http_call.dart';
 import 'package:chuck_interceptor/src/utils/chuck_constants.dart';
 import 'package:chuck_interceptor/src/ui/widget/chuck_call_list_item_widget.dart';
@@ -26,6 +27,7 @@ class _ChuckCallsListScreenState extends State<ChuckCallsListScreen> {
   final List<ChuckMenuItem> _menuItems = [];
   ChuckSortOption? _sortOption = ChuckSortOption.time;
   bool _sortAscending = false;
+  ChuckCallType? _selectedCallType = ChuckCallType.http; // null = all
 
   _ChuckCallsListScreenState() {
     _menuItems.add(ChuckMenuItem("Sort", Icons.sort));
@@ -51,16 +53,27 @@ class _ChuckCallsListScreenState extends State<ChuckCallsListScreen> {
           body: StreamBuilder<List<ChuckHttpCall>>(
             stream: chuckCore.callsSubject,
             builder: (context, snapshot) {
-              List<ChuckHttpCall> calls = snapshot.data ?? [];
+              final allCalls = snapshot.data ?? [];
+
+              // Filter by call type
+              List<ChuckHttpCall> calls = _selectedCallType != null
+                  ? allCalls.where((call) => call.callType == _selectedCallType).toList()
+                  : allCalls;
+
+              // Filter by search query
               final String query = _queryTextEditingController.text.trim();
               if (query.isNotEmpty) {
                 calls = calls.where((call) => call.endpoint.toLowerCase().contains(query.toLowerCase())).toList();
               }
-              if (calls.isNotEmpty) {
-                return _buildCallsListWidget(calls);
-              } else {
-                return _buildEmptyWidget();
-              }
+
+              return Column(
+                children: [
+                  _buildFilterTabs(allCalls),
+                  Expanded(
+                    child: calls.isNotEmpty ? _buildCallsListWidget(calls) : _buildEmptyWidget(),
+                  ),
+                ],
+              );
             },
           ),
         ),
@@ -116,12 +129,57 @@ class _ChuckCallsListScreenState extends State<ChuckCallsListScreen> {
       controller: _queryTextEditingController,
       autofocus: true,
       decoration: InputDecoration(
-        hintText: "Search http request...",
+        hintText: "Search request...",
         hintStyle: TextStyle(fontSize: 16.0, color: ChuckConstants.grey),
         border: InputBorder.none,
       ),
       style: const TextStyle(fontSize: 16.0),
       onChanged: _updateSearchQuery,
+    );
+  }
+
+  Widget _buildFilterTabs(List<ChuckHttpCall> allCalls) {
+    final httpCount = allCalls.where((c) => c.callType.isHttp).length;
+    final wsCount = allCalls.where((c) => c.callType.isWebSocket).length;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          _buildFilterChip("All", null, allCalls.length, ChuckConstants.lightRed),
+          const SizedBox(width: 6),
+          _buildFilterChip("HTTP", ChuckCallType.http, httpCount, ChuckConstants.green),
+          const SizedBox(width: 6),
+          _buildFilterChip("WS", ChuckCallType.ws, wsCount, ChuckConstants.purple),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, ChuckCallType? type, int count, Color color) {
+    final isSelected = _selectedCallType == type;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCallType = type;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? color : ChuckConstants.grey),
+        ),
+        child: Text(
+          "$label ($count)",
+          style: TextStyle(
+            fontSize: 12,
+            color: isSelected ? Colors.white : null,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
     );
   }
 
@@ -316,12 +374,12 @@ class _ChuckCallsListScreenState extends State<ChuckCallsListScreen> {
             actions: [
               TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(buildContext).pop();
                   },
                   child: const Text("Cancel")),
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  Navigator.of(buildContext).pop();
                   sortCalls();
                 },
                 child: const Text("Use filter"),

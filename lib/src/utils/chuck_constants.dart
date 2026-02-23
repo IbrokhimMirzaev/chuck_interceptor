@@ -8,4 +8,5 @@ sealed class ChuckConstants {
   static const Color green = Color(0xff05c46b);
   static const Color grey = Color(0xff808e9b);
   static const Color orange = Color(0xffffa801);
+  static const Color purple = Color(0xff6c5ce7);
 }

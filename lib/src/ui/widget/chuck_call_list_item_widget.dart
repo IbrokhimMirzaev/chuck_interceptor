@@ -39,10 +39,10 @@ class ChuckCallListItemWidget extends StatelessWidget {
   }
 
   Widget _buildMethodAndEndpointRow(BuildContext context) {
-    final Color? textColor = _getEndpointTextColor(context);
+    final Color? textColor = call.isWebSocket ? ChuckConstants.purple : _getEndpointTextColor(context);
     return Row(
       children: [
-        Text(call.method, style: TextStyle(fontSize: 16, color: textColor)),
+        Text(call.method, style: TextStyle(fontSize: 16, color: textColor, fontWeight: call.isWebSocket ? FontWeight.bold : null)),
         SizedBox(width: 10),
         Flexible(
           child: Text(
@@ -59,7 +59,7 @@ class ChuckCallListItemWidget extends StatelessWidget {
   Widget _buildServerRow() {
     return Row(
       children: [
-        _getSecuredConnectionIcon(call.secure),
+        call.isWebSocket ? _getWebSocketIcon() : _getSecuredConnectionIcon(call.secure),
         Expanded(
           child: Text(
             call.server,
@@ -73,6 +73,14 @@ class ChuckCallListItemWidget extends StatelessWidget {
   }
 
   Widget _buildStatsRow() {
+    if (call.isWebSocket) {
+      return Row(
+        children: [
+          Text(_formatTime(call.request?.time ?? call.createdTime), style: const TextStyle(fontSize: 12)),
+        ],
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -105,6 +113,17 @@ class ChuckCallListItemWidget extends StatelessWidget {
   }
 
   Widget _buildResponseColumn(BuildContext context) {
+    if (call.isWebSocket) {
+      return SizedBox(
+        width: 50,
+        child: Column(
+          children: [
+            Text("WS", style: TextStyle(fontSize: 16, color: ChuckConstants.purple, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      );
+    }
+
     final List<Widget> widgets = [];
     if (call.loading) {
       widgets.add(
@@ -163,6 +182,13 @@ class ChuckCallListItemWidget extends StatelessWidget {
     } else {
       return "${response.status}";
     }
+  }
+
+  Widget _getWebSocketIcon() {
+    return Padding(
+      padding: const EdgeInsets.only(right: 3),
+      child: Icon(Icons.sync_alt, color: ChuckConstants.purple, size: 12),
+    );
   }
 
   Widget _getSecuredConnectionIcon(bool secure) {
