@@ -54,16 +54,30 @@ class _ChuckCallDetailsScreenState extends State<ChuckCallDetailsScreen> with Si
     return DefaultTabController(
       length: 5,
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: ChuckConstants.lightRed,
-          foregroundColor: Colors.white,
-          key: const Key('share_key'),
-          onPressed: () async {
-            SharePlus.instance.share(
-              ShareParams(subject: 'Request Details', text: await _getSharableResponseString()),
+        floatingActionButton: Builder(
+          builder: (context) {
+            return FloatingActionButton(
+              backgroundColor: ChuckConstants.lightRed,
+              foregroundColor: Colors.white,
+              key: const Key('share_key'),
+              onPressed: () async {
+                try {
+                  final box = context.findRenderObject() as RenderBox?;
+                  final shareOrigin = box != null ? box.localToGlobal(Offset.zero) & box.size : null;
+
+                  await SharePlus.instance.share(
+                    ShareParams(
+                      subject: 'Request Details',
+                      text: await _getSharableResponseString(),
+                      sharePositionOrigin: shareOrigin,
+                    ),
+                  );
+                }
+                catch (_) {}
+              },
+              child: const Icon(Icons.share),
             );
           },
-          child: const Icon(Icons.share),
         ),
         appBar: AppBar(
           centerTitle: false,

@@ -92,14 +92,14 @@ class _ChuckCallResponseWidgetState extends ChuckBaseCallDetailsWidgetState<Chuc
 
   List<Widget> _buildBodyRows() {
     final List<Widget> rows = [];
-    if (_isImageResponse()) {
-      rows.addAll(_buildImageBodyRows());
-    } else if (_isTextResponse()) {
+    if (_call.isWebSocket || _isTextResponse()) {
       if (_isLargeResponseBody()) {
         rows.addAll(_buildLargeBodyTextRows());
       } else {
         rows.addAll(_buildTextBodyRows());
       }
+    } else if (_isImageResponse()) {
+      rows.addAll(_buildImageBodyRows());
     } else {
       rows.addAll(_buildUnknownBodyRows());
     }
