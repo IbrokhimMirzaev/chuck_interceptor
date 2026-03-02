@@ -143,7 +143,11 @@ class _ChuckCallResponseWidgetState extends ChuckBaseCallDetailsWidgetState<Chuc
       getContentType(headers),
     );
     if (bodyContent.contains("{") && bodyContent.contains("}")) {
-      rows.add(JsonViewer(jsonDecode(bodyContent)));
+      try {
+        rows.add(JsonViewer(jsonDecode(bodyContent)));
+      } catch (_) {
+        rows.add(getListRow("Body:", bodyContent));
+      }
     } else {
       rows.add(getListRow("Body:", bodyContent));
     }

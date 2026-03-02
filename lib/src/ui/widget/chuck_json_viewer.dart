@@ -94,13 +94,13 @@ class JsonObjectViewerState extends State<JsonObjectViewer> {
                 ? SelectableText(
                     entry.key,
                     style: TextStyle(
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   )
                 : SelectableText(
                     entry.key,
                     style: TextStyle(
-                      color: entry.value == null ? Colors.grey : Colors.black,
+                      color: entry.value == null ? Colors.grey : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
             const Text(
@@ -360,7 +360,7 @@ class _JsonArrayViewerState extends State<JsonArrayViewer> {
                 : Text(
                     '[$i]',
                     style: TextStyle(
-                      color: content == null ? Colors.grey : Colors.black,
+                      color: content == null ? Colors.grey : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
             const Text(
@@ -381,7 +381,7 @@ class _JsonArrayViewerState extends State<JsonArrayViewer> {
   }
 
   Widget getInkWell(int index) {
-    return Text('[$index]', style: TextStyle(color: Colors.black));
+    return Text('[$index]', style: TextStyle(color: Theme.of(context).colorScheme.onSurface));
   }
 
   Widget getValueWidget(dynamic content, int index) {
